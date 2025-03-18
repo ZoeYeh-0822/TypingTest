@@ -1,103 +1,106 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>打字測驗</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-    #test-section { display: none; }
-    #login-section { margin-bottom: 20px; }
-  </style>
+　<meta charset="UTF-8">
+　<meta name="viewport" content="width=device-width, initial-scale=1.0">
+　<title>打字測驗</title>
+　<style>
+　　body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+　　#test-section { display: none; }
+　　#login-section { margin-bottom: 20px; }
+　</style>
 </head>
 <body>
-  <div id="login-section">
-    <h1>歡迎使用打字測驗</h1>
-    <div id="g_id_onload"
-         data-client_id="125779109904-p5rn3d8n49pk8kueb5ovt0ullvn8s429.apps.googleusercontent.com"
-         data-callback="handleCredentialResponse">
-    </div>
-    <div class="g_id_signin" data-type="standard"></div>
-  </div>
+　<div id="login-section">
+　　<h1>歡迎使用打字測驗</h1>
+　　<div id="g_id_onload"
+　　　 data-client_id="125779109904-p5rn3d8n49pk8kueb5ovt0ullvn8s429.apps.googleusercontent.com"
+　　　 data-callback="handleCredentialResponse"
+　　　 data-auto_prompt="true">
+　　</div>
+　　<div class="g_id_signin" data-type="standard"></div>
+　</div>
 
-  <div id="test-section">
-    <h1>打字測驗</h1>
-    <p id="text-to-type">這是一段測試文字，請開始輸入。</p>
-    <input type="text" id="input-box" placeholder="請輸入文字...">
-    <p id="feedback"></p>
-    <p id="result"></p>
-    <button id="start-btn">開始測驗</button>
-  </div>
+　<div id="test-section">
+　　<h1>打字測驗</h1>
+　　<p id="text-to-type">這是一段測試文字，請開始輸入。</p>
+　　<input type="text" id="input-box" placeholder="請輸入文字...">
+　　<p id="feedback"></p>
+　　<p id="result"></p>
+　　<button id="start-btn">開始測驗</button>
+　</div>
 
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script>
-    const textToType = "這是一段測試文字，請開始輸入。";
-    let startTime, endTime;
-    let userId = null;
+　<script src="https://accounts.google.com/gsi/client" async defer></script>
+　<script>
+　　const textToType = "這是一段測試文字，請開始輸入。";
+　　let startTime, endTime;
+　　let userId = null;
 
-    // Google 登入回調
-    function handleCredentialResponse(response) {
-      const profile = JSON.parse(atob(response.credential.split('.')[1]));
-      userId = profile.sub;
-      const email = profile.email;
-      saveUser(userId, email);
-      document.getElementById("login-section").style.display = "none";
-      document.getElementById("test-section").style.display = "block";
-    }
+　　// Google 登入回調
+　　function handleCredentialResponse(response) {
+　　　const profile = JSON.parse(atob(response.credential.split('.')[1]));
+　　　// 在此處加入日誌輸出，確認是否成功呼叫並取得正確的用戶資料
+　　　console.log("登入成功，userId:", profile.sub, "email:", profile.email);
+　　　userId = profile.sub;
+　　　const email = profile.email;
+　　　saveUser(userId, email);
+　　　document.getElementById("login-section").style.display = "none";
+　　　document.getElementById("test-section").style.display = "block";
+　　}
 
-    // 保存用戶資訊
-    function saveUser(userId, email) {
-      fetch("https://script.google.com/macros/s/AKfycbxXUrqrU6l2KK0ll-cuq4yXIjD3iZffSKaeS1ia34ud6d3cSJSHMGzLMt38YIe5yYhWgw/exec", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "saveUser", userId: userId, email: email })
-      });
-    }
+　　// 保存用戶資訊
+　　function saveUser(userId, email) {
+　　　fetch("https://script.google.com/macros/s/AKfycbxXUrqrU6l2KK0ll-cuq4yXIjD3iZffSKaeS1ia34ud6d3cSJSHMGzLMt38YIe5yYhWgw/exec", {
+　　　　method: "POST",
+　　　　headers: { "Content-Type": "application/json" },
+　　　　body: JSON.stringify({ action: "saveUser", userId: userId, email: email })
+　　　});
+　　}
 
-    // 開始測驗
-    document.getElementById("start-btn").addEventListener("click", () => {
-      document.getElementById("input-box").value = "";
-      document.getElementById("feedback").textContent = "";
-      document.getElementById("result").textContent = "";
-      document.getElementById("input-box").disabled = false;
-      document.getElementById("input-box").focus();
-      startTime = Date.now();
-    });
+　　// 開始測驗
+　　document.getElementById("start-btn").addEventListener("click", () => {
+　　　document.getElementById("input-box").value = "";
+　　　document.getElementById("feedback").textContent = "";
+　　　document.getElementById("result").textContent = "";
+　　　document.getElementById("input-box").disabled = false;
+　　　document.getElementById("input-box").focus();
+　　　startTime = Date.now();
+　　});
 
-    // 即時檢查輸入
-    document.getElementById("input-box").addEventListener("input", () => {
-      const userInput = document.getElementById("input-box").value;
-      let correct = true;
-      for (let i = 0; i < userInput.length; i++) {
-        if (userInput[i] !== textToType[i]) {
-          correct = false;
-          document.getElementById("feedback").textContent = "輸入錯誤！";
-          break;
-        } else {
-          document.getElementById("feedback").textContent = "正確！";
-        }
-      }
+　　// 即時檢查輸入
+　　document.getElementById("input-box").addEventListener("input", () => {
+　　　const userInput = document.getElementById("input-box").value;
+　　　let correct = true;
+　　　for (let i = 0; i < userInput.length; i++) {
+　　　　if (userInput[i] !== textToType[i]) {
+　　　　　　correct = false;
+　　　　　　document.getElementById("feedback").textContent = "輸入錯誤！";
+　　　　　　break;
+　　　　} else {
+　　　　　　document.getElementById("feedback").textContent = "正確！";
+　　　　}
+　　　}
 
-      // 測驗完成
-      if (userInput === textToType) {
-        endTime = Date.now();
-        const timeTaken = (endTime - startTime) / 1000 / 60; // 分鐘
-        const wpm = Math.round(textToType.length / timeTaken);
-        const accuracy = 100; // 假設完全正確
-        document.getElementById("result").textContent = `測驗完成！WPM: ${wpm}，準確率: ${accuracy}%`;
-        document.getElementById("input-box").disabled = true;
-        saveScore(userId, wpm, accuracy);
-      }
-    });
+　　　// 測驗完成
+　　　if (userInput === textToType) {
+　　　　endTime = Date.now();
+　　　　const timeTaken = (endTime - startTime) / 1000 / 60; // 分鐘
+　　　　const wpm = Math.round(textToType.length / timeTaken);
+　　　　const accuracy = 100; // 假設完全正確
+　　　　document.getElementById("result").textContent = `測驗完成！WPM: ${wpm}，準確率: ${accuracy}%`;
+　　　　document.getElementById("input-box").disabled = true;
+　　　　saveScore(userId, wpm, accuracy);
+　　　}
+　　});
 
-    // 保存成績
-    function saveScore(userId, wpm, accuracy) {
-      fetch("https://script.google.com/macros/s/AKfycbxXUrqrU6l2KK0ll-cuq4yXIjD3iZffSKaeS1ia34ud6d3cSJSHMGzLMt38YIe5yYhWgw/exec", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "saveScore", userId: userId, wpm: wpm, accuracy: accuracy })
-      });
-    }
-  </script>
+　　// 保存成績
+　　function saveScore(userId, wpm, accuracy) {
+　　　fetch("https://script.google.com/macros/s/AKfycbxXUrqrU6l2KK0ll-cuq4yXIjD3iZffSKaeS1ia34ud6d3cSJSHMGzLMt38YIe5yYhWgw/exec", {
+　　　　method: "POST",
+　　　　headers: { "Content-Type": "application/json" },
+　　　　body: JSON.stringify({ action: "saveScore", userId: userId, wpm: wpm, accuracy: accuracy })
+　　　});
+　　}
+　</script>
 </body>
 </html>
